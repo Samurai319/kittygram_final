@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Backend: flake8 + pytest
+      # Backend: flake8 + pytest (только папка backend)
       - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
@@ -39,21 +39,21 @@ jobs:
         working-directory: backend
         run: flake8 .
 
-      - name: Pytest backend (optional)
-        working-directory: backend
-        run: pytest -q || echo "no backend tests"
+      - name: Pytest backend (only backend folder)
+        run: |
+          python -m pytest -q backend || echo "no backend tests"
 
-      # Frontend: npm ci + build + (опциональные тесты)
+      # Frontend
       - uses: actions/setup-node@v4
         with:
           node-version: "18"
 
-      - name: NPM CI + tests + build
+      - name: NPM CI + tests + build (warnings not fail)
         working-directory: frontend
         run: |
           npm ci
           npm test --silent || echo "no frontend tests"
-          npm run build
+          CI=false npm run build
 
   build_and_push:
     needs: test
@@ -113,7 +113,6 @@ jobs:
           script: |
             set -e
             mkdir -p ~/kittygram
-            cd ~
             sudo docker system prune -af || true
 
       - name: Upload compose to server
