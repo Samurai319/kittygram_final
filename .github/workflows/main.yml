@@ -39,9 +39,9 @@ jobs:
         working-directory: backend
         run: flake8 .
 
-      - name: Pytest backend (only backend folder)
-        working-directory: backend
+      - name: Pytest (run all tests)
         run: pytest -q
+
 
       # Frontend: npm ci + build (с игнором warning)
       - uses: actions/setup-node@v4
