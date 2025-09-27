@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Backend: flake8 + pytest (только папка backend)
+      # Backend: flake8 + pytest
       - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
@@ -43,12 +43,12 @@ jobs:
         run: |
           python -m pytest -q backend || echo "no backend tests"
 
-      # Frontend
+      # Frontend: npm ci + build
       - uses: actions/setup-node@v4
         with:
           node-version: "18"
 
-      - name: NPM CI + tests + build (warnings not fail)
+      - name: NPM CI + tests + build (ignore CRA warnings)
         working-directory: frontend
         run: |
           npm ci
@@ -60,6 +60,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: DEBUG: check secrets presence
+        run: |
+          [[ -n "${{ secrets.DOCKERHUB_USERNAME }}" ]] && echo "DOCKERHUB_USERNAME: OK" || (echo "DOCKERHUB_USERNAME: MISSING" && exit 1)
+          [[ -n "${{ secrets.DOCKERHUB_TOKEN }}" ]] && echo "DOCKERHUB_TOKEN: OK" || (echo "DOCKERHUB_TOKEN: MISSING" && exit 1)
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
