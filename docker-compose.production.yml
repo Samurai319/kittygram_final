@@ -1,4 +1,3 @@
-# docker-compose.production.yml  — КОПИПАСТА
 services:
   db:
     image: postgres:13
@@ -16,16 +15,17 @@ services:
     depends_on:
       db:
         condition: service_started
+    expose:
+      - "8000"
     volumes:
       - static:/backend_static
       - media:/media
-    expose:
-      - "8000"
 
   frontend:
     image: ${DOCKERHUB_USERNAME}/kittygram_frontend:latest
     container_name: frontend
     restart: always
+    # В образе фронта статика уже собрана в /usr/share/nginx/html
     volumes:
       - static:/usr/share/nginx/html
 
@@ -42,9 +42,12 @@ services:
       - "80:80"
       - "443:443"
     volumes:
+      # Статика и медиа, которые собирает backend
       - static:/static
       - media:/media
-      - ./nginx:/etc/nginx/conf.d:ro
+      # Монтируем РОВНО один конфиг-файл внутрь conf.d
+      - ./nginx/default.conf:/etc/nginx/conf.d/100-custom.conf:ro
+      # Системные сертификаты Let's Encrypt с хоста (после certbot)
       - /etc/letsencrypt:/etc/letsencrypt:ro
 
 volumes:
