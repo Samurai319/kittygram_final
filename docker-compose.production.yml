@@ -1,3 +1,4 @@
+# docker-compose.production.yml  — КОПИПАСТА
 services:
   db:
     image: postgres:13
@@ -25,7 +26,6 @@ services:
     image: ${DOCKERHUB_USERNAME}/kittygram_frontend:latest
     container_name: frontend
     restart: always
-    # фронт в образе слушает 80 порт и отдаёт статику
     volumes:
       - static:/usr/share/nginx/html
 
@@ -38,14 +38,13 @@ services:
         condition: service_started
       frontend:
         condition: service_started
-    # ВАЖНО: пробросить и 80 и 443
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - static:/static
       - media:/media
-      # Подмонтировать сертификаты Let’s Encrypt с хоста
+      - ./nginx:/etc/nginx/conf.d:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
 
 volumes:
