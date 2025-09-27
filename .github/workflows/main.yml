@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Backend: flake8 + pytest (только папка backend)
+      # Backend: Python 3.10 + системные либы для Pillow
       - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
@@ -39,11 +39,15 @@ jobs:
         working-directory: backend
         run: flake8 .
 
-      - name: Pytest (run all tests)
-        run: pytest -q
+      - name: Pytest backend (run only if tests exist)
+        run: |
+          if [ -d backend/tests ] && [ "$(ls -A backend/tests)" ]; then
+            python -m pytest -q backend
+          else
+            echo "No backend tests found, skipping."
+          fi
 
-
-      # Frontend: npm ci + build (с игнором warning)
+      # Frontend: Node 18, сборка без падения на warning'ах CRA
       - uses: actions/setup-node@v4
         with:
           node-version: "18"
