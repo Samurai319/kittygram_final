@@ -117,17 +117,19 @@ jobs:
           passphrase: ${{ env.SSH_PASSPHRASE }}
           script: |
             set -e
-            mkdir -p ~/kittygram
+            mkdir -p ~/kittygram/nginx
             sudo docker system prune -af || true
 
-      - name: Upload compose to server
+      - name: Upload compose and nginx config to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ env.SSH_HOST }}
           username: ${{ env.SSH_USER }}
           key: ${{ env.SSH_KEY }}
           passphrase: ${{ env.SSH_PASSPHRASE }}
-          source: "docker-compose.production.yml"
+          source: |
+            docker-compose.production.yml
+            nginx/default.conf
           target: "/home/${{ env.SSH_USER }}/kittygram"
 
       - name: Deploy via SSH
