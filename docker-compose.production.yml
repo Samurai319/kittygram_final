@@ -33,10 +33,11 @@ services:
       - backend
       - frontend
     ports:
-      - "9000:80"   # хостовый nginx проксирует 443 -> 127.0.0.1:9000
+      - "9000:80"        # хостовой nginx: 443 -> 127.0.0.1:9000
     volumes:
       - static:/static
       - media:/media
+    # конфиг уже внутри образа (COPY). Ничего не монтируем на путь файла.
 
 volumes:
   static:

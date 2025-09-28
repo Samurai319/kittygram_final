@@ -113,7 +113,7 @@ jobs:
           echo "--- compose ---"
           ls -la | grep -E 'docker-compose(\.production)?\.yml' || true
 
-      - name: Prepare server directory and cleanup
+      - name: Prepare server directory
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ env.SSH_HOST }}
@@ -122,8 +122,7 @@ jobs:
           passphrase: ${{ env.SSH_PASSPHRASE }}
           script: |
             set -e
-            mkdir -p ~/kittygram
-            sudo docker system prune -af || true
+            mkdir -p ~/kittygram/nginx
 
       - name: Upload compose to server
         uses: appleboy/scp-action@v0.1.7
@@ -136,7 +135,7 @@ jobs:
             docker-compose.production.yml
           target: "/home/${{ env.SSH_USER }}/kittygram"
           overwrite: true
-          rm: true
+          rm: false   # не пытаемся удалять всю папку (чтобы не падало)
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
