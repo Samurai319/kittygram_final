@@ -128,8 +128,9 @@ jobs:
           key: ${{ env.SSH_KEY }}
           passphrase: ${{ env.SSH_PASSPHRASE }}
           source: |
-            docker-compose.production.yml
-            nginx/default.conf
+            ./docker-compose.production.yml
+            ./nginx/default.conf
+          strip_components: 0
           target: "/home/${{ env.SSH_USER }}/kittygram"
 
       - name: Deploy via SSH
