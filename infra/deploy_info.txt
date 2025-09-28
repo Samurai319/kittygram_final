@@ -1,0 +1,3 @@
+TASKI_DOMAIN=https://infrasprint1.ru
+KITTYGRAM_DOMAIN=https://samurai319.online
+DOCKER_USERNAME=samurai3193
