@@ -63,12 +63,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Debug DockerHub secrets presence
-        run: |
-          [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ] && echo "DH_USER: set" || echo "DH_USER: EMPTY"
-          [ -n "${{ secrets.DOCKERHUB_TOKEN }}" ] && echo "DH_TOKEN: set" || echo "DH_TOKEN: EMPTY"
-
-      - name: Login to Docker Hub (manual)
+      - name: Login to Docker Hub
         run: |
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
@@ -108,6 +103,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Show workspace tree (diagnostics)
+        run: |
+          set -euxo pipefail
+          pwd
+          ls -la
+          echo "--- nginx ---"
+          ls -la nginx || true
+          echo "--- compose ---"
+          ls -la | grep -E 'docker-compose(\.production)?\.yml' || true
+
       - name: Prepare server directory and cleanup
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -117,10 +122,10 @@ jobs:
           passphrase: ${{ env.SSH_PASSPHRASE }}
           script: |
             set -e
-            mkdir -p ~/kittygram/nginx
+            mkdir -p ~/kittygram
             sudo docker system prune -af || true
 
-      - name: Upload compose and nginx config to server
+      - name: Upload compose to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ env.SSH_HOST }}
@@ -128,10 +133,10 @@ jobs:
           key: ${{ env.SSH_KEY }}
           passphrase: ${{ env.SSH_PASSPHRASE }}
           source: |
-            ./docker-compose.production.yml
-            ./nginx/default.conf
-          strip_components: 0
+            docker-compose.production.yml
           target: "/home/${{ env.SSH_USER }}/kittygram"
+          overwrite: true
+          rm: true
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
@@ -143,8 +148,11 @@ jobs:
           script: |
             set -e
             cd ~/kittygram
+            export DOCKERHUB_USERNAME="${{ env.DOCKERHUB_USERNAME }}"
             docker compose -f docker-compose.production.yml pull
             docker compose -f docker-compose.production.yml up -d --remove-orphans
+            docker compose -f docker-compose.production.yml exec -T gateway nginx -t
+            docker compose -f docker-compose.production.yml logs -n 80 gateway
             docker compose -f docker-compose.production.yml exec -T backend python manage.py migrate --noinput
             docker compose -f docker-compose.production.yml exec -T backend python manage.py collectstatic --noinput
             docker compose -f docker-compose.production.yml ps
