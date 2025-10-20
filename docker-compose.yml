@@ -33,6 +33,8 @@ services:
       context: ./frontend
     container_name: frontend
     restart: always
+    volumes:
+      - static:/static
     # build фронта кладёт файлы в /usr/share/nginx/html внутри образа
 
   gateway:
