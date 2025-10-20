@@ -9,10 +9,10 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Копируем всю сборку React (включая подпапки js, css, media)
-RUN mkdir -p /static && cp -r build/. /static/
+# Копируем вложенную папку static (где лежат js/css/media) прямо в корень /static/
+RUN mkdir -p /static && cp -r build/static/* /static/
+RUN cp -r build/* /static/ || true
 
 RUN npm install --global http-server
 
-# При запуске контейнера убеждаемся, что /static актуален и запускаем http-server
-CMD ["sh", "-c", "mkdir -p /static && cp -r /app/build/. /static/ && exec npx -y http-server -p 8000 /static"]
+CMD ["sh", "-c", "mkdir -p /static && cp -r /app/build/static/* /static/ && exec npx -y http-server -p 8000 /static"]
