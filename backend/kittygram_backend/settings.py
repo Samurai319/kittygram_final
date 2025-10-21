@@ -4,11 +4,9 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# 🔑 Секрет и debug из .env
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-key")
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-# Хосты и CSRF из .env
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",") if not DEBUG else []
 CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if not DEBUG else []
 
